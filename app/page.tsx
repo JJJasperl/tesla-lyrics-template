@@ -231,13 +231,11 @@ export default function Home() {
   const [mode, setMode] = useState<'demo' | 'spotify'>('demo');
   const [track, setTrack] = useState<TrackInfo>(demoTrack);
   const [lyrics, setLyrics] = useState<LyricLine[]>(demoLyrics);
-  const [lyricsNote, setLyricsNote] = useState('Built-in test lyrics');
   const [displayMs, setDisplayMs] = useState(0);
   const [lastSyncAt, setLastSyncAt] = useState(0);
   const [status, setStatus] = useState('Demo mode');
   const [error, setError] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
-  const [lastSyncLatencyMs, setLastSyncLatencyMs] = useState<number | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [pairingOpen, setPairingOpen] = useState(false);
   const [pairing, setPairing] = useState<PairingSession | null>(null);
@@ -302,7 +300,6 @@ export default function Home() {
     const parsed = parseSyncedLyrics(saved, savedOffset);
     if (parsed.length) {
       setLyrics(parsed);
-      setLyricsNote('Local LRC override');
       return;
     }
 
@@ -314,12 +311,10 @@ export default function Home() {
     const cacheIsFresh = cachedAt > 0 && Date.now() - cachedAt < AUTO_LRC_CACHE_TTL_MS;
     if (cachedLyrics.length && cacheIsFresh && !forceRefresh) {
       setLyrics(cachedLyrics);
-      setLyricsNote('Automatic LRCLIB lyrics · Cached');
       return;
     }
 
     setLyrics([{ time: 0, text: 'Matching synchronized lyrics…' }]);
-    setLyricsNote('Searching LRCLIB');
 
     try {
       const exactParams = new URLSearchParams({
@@ -359,7 +354,6 @@ export default function Home() {
       if (requestId !== lyricsRequestId.current) return;
       if (match?.instrumental) {
         setLyrics([{ time: 0, text: 'Instrumental · No lyrics' }]);
-        setLyricsNote('Detected automatically by LRCLIB');
         return;
       }
 
@@ -369,26 +363,21 @@ export default function Home() {
         localStorage.setItem(`${AUTO_LRC_KEY_PREFIX}${nextTrack.id}`, synced);
         localStorage.setItem(`${AUTO_LRC_CACHED_AT_PREFIX}${nextTrack.id}`, String(Date.now()));
         setLyrics(automaticLyrics);
-        setLyricsNote('Automatic LRCLIB lyrics');
         setError('');
         return;
       }
 
       if (cachedLyrics.length) {
         setLyrics(cachedLyrics);
-        setLyricsNote('Older LRCLIB cache · Re-fetch in settings');
       } else {
         setLyrics([{ time: 0, text: 'No synchronized lyrics found for this track' }]);
-        setLyricsNote('Not currently available on LRCLIB');
       }
     } catch {
       if (requestId !== lyricsRequestId.current) return;
       if (cachedLyrics.length) {
         setLyrics(cachedLyrics);
-        setLyricsNote('Older LRCLIB cache · Updates when service recovers');
       } else {
         setLyrics([{ time: 0, text: 'The automatic lyrics service is temporarily unavailable' }]);
-        setLyricsNote('Change tracks or refresh to try again');
       }
     }
   }, []);
@@ -405,7 +394,6 @@ export default function Home() {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       const responseReceivedAt = Date.now();
-      setLastSyncLatencyMs(responseReceivedAt - requestStartedAt);
       if (response.status === 204) {
         setTrack((current) => ({ ...current, isPlaying: false }));
         setStatus('Nothing is currently playing on Spotify');
@@ -790,7 +778,6 @@ export default function Home() {
     setMode('demo');
     setTrack({ ...demoTrack, isPlaying: true });
     setLyrics(demoLyrics);
-    setLyricsNote('Built-in test lyrics');
     setDisplayMs(0);
     setStatus('Demo mode');
     setError('');
@@ -838,7 +825,6 @@ export default function Home() {
     localStorage.setItem(`${LRC_KEY_PREFIX}${track.id}`, manualLrc);
     localStorage.setItem(`${LRC_OFFSET_KEY_PREFIX}${track.id}`, String(lyricOffsetMs));
     setLyrics(parsed);
-    setLyricsNote('Local LRC override');
     setError('');
     setSettingsOpen(false);
   };
@@ -855,7 +841,6 @@ export default function Home() {
       if (!parsed.length) throw new Error('No [minutes:seconds] LRC timestamps were found.');
       setManualLrc(content);
       setLyrics(parsed);
-      setLyricsNote('Local LRC override');
       localStorage.setItem(`${LRC_KEY_PREFIX}${track.id}`, content);
       localStorage.setItem(`${LRC_OFFSET_KEY_PREFIX}${track.id}`, String(lyricOffsetMs));
       setError('');
@@ -929,6 +914,21 @@ export default function Home() {
   }, [syncNow, token]);
 
   const progress = Math.min(100, Math.max(0, (displayMs / track.durationMs) * 100));
+  const compactStatus = error
+    ? 'Connection issue'
+    : mode === 'demo'
+      ? track.isPlaying
+        ? 'Demo playing'
+        : 'Demo paused'
+      : isSyncing
+        ? 'Updating…'
+        : status === 'Nothing is currently playing on Spotify'
+          ? 'Nothing playing'
+          : status === 'Spotify is paused'
+            ? 'Paused'
+            : token
+              ? 'Spotify connected'
+              : 'Not connected';
 
   if (phoneCallbackStatus) {
     const success = phoneCallbackStatus === 'success';
@@ -1218,11 +1218,11 @@ export default function Home() {
               <span>{formatTime(track.durationMs)}</span>
             </div>
 
-            <div className="player-actions mt-4 flex items-center gap-3">
+            <div className="player-actions mt-4 flex min-w-0 items-center gap-3">
               {mode === 'demo' ? (
                 <Button
                   onClick={toggleDemo}
-                  className="size-14 rounded-full bg-white text-black hover:bg-white/85"
+                  className="size-10 shrink-0 rounded-full bg-white text-black hover:bg-white/85"
                   aria-label={track.isPlaying ? 'Pause demo' : 'Resume demo'}
                 >
                   {track.isPlaying ? (
@@ -1232,32 +1232,26 @@ export default function Home() {
                   )}
                 </Button>
               ) : (
-                <span className="grid size-14 place-items-center rounded-full bg-[#1ed760]/12 text-[#1ed760]">
-                  <Radio className="size-5" />
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#1ed760]/10 text-[#1ed760]">
+                  <Radio className="size-4" />
                 </span>
               )}
-              <div className="min-w-0">
-                <p className="flex items-center gap-2 text-sm font-medium text-white/82" aria-live="polite">
-                  {error ? (
-                    <CircleAlert className="size-4 text-amber-400" />
-                  ) : (
-                    <CircleCheck className="size-4 text-[#1ed760]" />
-                  )}
-                  {status}
-                </p>
-                <p className="mt-1 truncate text-xs text-white/32">
-                  {error || `${lyricsNote}${lastSyncLatencyMs === null ? '' : ` · Response ${(lastSyncLatencyMs / 1000).toFixed(1)} sec`}`}
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                onClick={() => void (token ? syncNow() : startPhonePairing())}
-                disabled={isSyncing}
-                className="ml-auto h-11 rounded-full px-4 text-white/55 hover:bg-white/8 hover:text-white"
+              <p
+                className={`min-w-0 flex-1 truncate text-sm font-medium ${error ? 'text-amber-300/85' : 'text-white/58'}`}
+                aria-live="polite"
+                title={error || status}
               >
-                {token ? <RefreshCw className={isSyncing ? 'animate-spin' : ''} /> : <QrCode />}
-                {token ? 'Sync' : 'Connect'}
-              </Button>
+                {compactStatus}
+              </p>
+              {!token && (
+                <Button
+                  variant="ghost"
+                  onClick={() => void startPhonePairing()}
+                  className="ml-auto h-10 shrink-0 rounded-full px-3 text-white/58 hover:bg-white/8 hover:text-white"
+                >
+                  <QrCode className="size-4" />Connect
+                </Button>
+              )}
             </div>
           </footer>
         </aside>
