@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import QRCode from 'qrcode';
 import {
   CircleAlert,
   CircleCheck,
@@ -10,9 +11,11 @@ import {
   Pause,
   Play,
   Plus,
+  QrCode,
   Radio,
   RefreshCw,
   Settings,
+  Smartphone,
   Trash2,
   Upload,
 } from 'lucide-react';
@@ -65,6 +68,20 @@ type SpotifyTokenResponse = {
   access_token: string;
   refresh_token?: string;
   expires_in: number;
+};
+
+type PairingSession = {
+  sessionId: string;
+  secret: string;
+  pairUrl: string;
+  expiresAt: number;
+  qrDataUrl: string;
+};
+
+type PairingStatusResponse = {
+  status?: 'pending' | 'authorized' | 'denied' | 'expired' | 'complete';
+  code?: string;
+  error?: string;
 };
 
 type SpotifyNowPlayingResponse = {
@@ -209,6 +226,7 @@ function readToken(): StoredToken | null {
 export default function Home() {
   const [clientId, setClientId] = useState('');
   const [draftClientId, setDraftClientId] = useState('');
+  const [managedClientId, setManagedClientId] = useState(false);
   const [token, setToken] = useState<StoredToken | null>(null);
   const [mode, setMode] = useState<'demo' | 'spotify'>('demo');
   const [track, setTrack] = useState<TrackInfo>(demoTrack);
@@ -221,6 +239,10 @@ export default function Home() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncLatencyMs, setLastSyncLatencyMs] = useState<number | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [pairingOpen, setPairingOpen] = useState(false);
+  const [pairing, setPairing] = useState<PairingSession | null>(null);
+  const [pairingStatus, setPairingStatus] = useState('Preparing phone pairing…');
+  const [phoneCallbackStatus, setPhoneCallbackStatus] = useState<'success' | 'error' | null>(null);
   const [manualLrc, setManualLrc] = useState('');
   const [lyricOffsetMs, setLyricOffsetMs] = useState(0);
   const lrcFileInput = useRef<HTMLInputElement | null>(null);
@@ -229,6 +251,8 @@ export default function Home() {
   const spotifyRetryAt = useRef(0);
   const lyricRefs = useRef<Array<HTMLParagraphElement | null>>([]);
   const lyricViewport = useRef<HTMLDivElement | null>(null);
+  const pairingVerifier = useRef('');
+  const pairingExchangeInFlight = useRef(false);
 
   const saveToken = useCallback((nextToken: StoredToken | null) => {
     setToken(nextToken);
@@ -441,10 +465,23 @@ export default function Home() {
   }, [getAccessToken, loadLyrics, mode]);
 
   useEffect(() => {
-    const initialize = () => {
+    const initialize = async () => {
       const savedClientId = localStorage.getItem(CLIENT_ID_KEY) || '';
-      setClientId(savedClientId);
-      setDraftClientId(savedClientId);
+      let configuredClientId = '';
+      try {
+        const configResponse = await fetch('/api/config', { cache: 'no-store' });
+        if (configResponse.ok) {
+          const config = (await configResponse.json()) as { spotifyClientId?: string | null };
+          configuredClientId = config.spotifyClientId?.trim() || '';
+        }
+      } catch {
+        // A public template can run without a managed Client ID.
+      }
+      const effectiveClientId = configuredClientId || savedClientId;
+      setClientId(effectiveClientId);
+      setDraftClientId(effectiveClientId);
+      setManagedClientId(Boolean(configuredClientId));
+      if (configuredClientId) localStorage.setItem(CLIENT_ID_KEY, configuredClientId);
       const restoredToken = readToken();
       setToken(restoredToken);
 
@@ -454,6 +491,26 @@ export default function Home() {
       const verifier = localStorage.getItem(VERIFIER_KEY);
       const expectedState = localStorage.getItem(STATE_KEY);
 
+      if (returnedState?.startsWith('qr_') && (code || params.get('error'))) {
+        window.history.replaceState({}, '', window.location.pathname);
+        try {
+          const callbackResponse = await fetch('/api/pairings/callback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              state: returnedState,
+              code,
+              error: params.get('error'),
+            }),
+          });
+          if (!callbackResponse.ok) throw new Error('The pairing session has expired.');
+          setPhoneCallbackStatus('success');
+        } catch {
+          setPhoneCallbackStatus('error');
+        }
+        return;
+      }
+
       if (!code) {
         if (restoredToken) {
           setMode('spotify');
@@ -462,7 +519,7 @@ export default function Home() {
         return;
       }
       window.history.replaceState({}, '', window.location.pathname);
-      if (!savedClientId || !verifier || !returnedState || returnedState !== expectedState) {
+      if (!effectiveClientId || !verifier || !returnedState || returnedState !== expectedState) {
         setError('Spotify login validation failed. Please reconnect.');
         return;
       }
@@ -470,7 +527,7 @@ export default function Home() {
       const exchangeCode = async () => {
         try {
           const body = new URLSearchParams({
-            client_id: savedClientId,
+            client_id: effectiveClientId,
             grant_type: 'authorization_code',
             code,
             redirect_uri: `${window.location.origin}/`,
@@ -500,7 +557,7 @@ export default function Home() {
       };
       void exchangeCode();
     };
-    const initializeTimer = window.setTimeout(initialize, 0);
+    const initializeTimer = window.setTimeout(() => void initialize(), 0);
     return () => window.clearTimeout(initializeTimer);
   }, [saveToken]);
 
@@ -563,7 +620,7 @@ export default function Home() {
   }, [activeIndex]);
 
   const beginSpotifyLogin = async () => {
-    const trimmed = draftClientId.trim();
+    const trimmed = (draftClientId || clientId).trim();
     if (!trimmed) {
       setError('Enter your Spotify Client ID first.');
       return;
@@ -586,6 +643,148 @@ export default function Home() {
     });
     window.location.assign(`https://accounts.spotify.com/authorize?${params}`);
   };
+
+  const startPhonePairing = async () => {
+    const trimmed = (draftClientId || clientId).trim();
+    if (!trimmed) {
+      setError('Enter your Spotify Client ID first.');
+      setSettingsOpen(true);
+      return;
+    }
+
+    setPairingOpen(true);
+    setPairing(null);
+    setPairingStatus('Preparing phone pairing…');
+    setError('');
+    try {
+      localStorage.setItem(CLIENT_ID_KEY, trimmed);
+      setClientId(trimmed);
+      const verifier = randomString();
+      pairingVerifier.current = verifier;
+      const codeChallenge = await sha256Base64Url(verifier);
+      const response = await fetch('/api/pairings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId: trimmed, codeChallenge }),
+      });
+      const data = (await response.json()) as {
+        sessionId?: string;
+        secret?: string;
+        pairUrl?: string;
+        expiresAt?: number;
+        error?: string;
+      };
+      if (!response.ok || !data.sessionId || !data.secret || !data.pairUrl || !data.expiresAt) {
+        throw new Error(data.error || 'Could not create a phone pairing session.');
+      }
+      const qrDataUrl = await QRCode.toDataURL(data.pairUrl, {
+        width: 360,
+        margin: 2,
+        color: { dark: '#061109', light: '#ffffff' },
+        errorCorrectionLevel: 'M',
+      });
+      setPairing({
+        sessionId: data.sessionId,
+        secret: data.secret,
+        pairUrl: data.pairUrl,
+        expiresAt: data.expiresAt,
+        qrDataUrl,
+      });
+      setPairingStatus('Scan with your phone, then approve Spotify access.');
+      setSettingsOpen(false);
+    } catch (reason) {
+      pairingVerifier.current = '';
+      const message = reason instanceof Error ? reason.message : 'Phone pairing is unavailable.';
+      setPairingStatus(message);
+      setError(message);
+    }
+  };
+
+  const closePhonePairing = () => {
+    setPairingOpen(false);
+    setPairing(null);
+    pairingVerifier.current = '';
+    pairingExchangeInFlight.current = false;
+  };
+
+  useEffect(() => {
+    if (!pairing) return;
+    let cancelled = false;
+    let closeTimer: number | undefined;
+
+    const checkPairing = async () => {
+      if (cancelled || pairingExchangeInFlight.current) return;
+      if (Date.now() > pairing.expiresAt) {
+        setPairingStatus('This QR code has expired. Close this window and try again.');
+        return;
+      }
+      try {
+        const response = await fetch('/api/pairings/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: pairing.sessionId, secret: pairing.secret }),
+        });
+        const data = (await response.json()) as PairingStatusResponse;
+        if (data.status === 'pending') return;
+        if (data.status === 'expired' || response.status === 410) {
+          setPairingStatus('This QR code has expired. Close this window and try again.');
+          return;
+        }
+        if (data.status === 'denied') {
+          setPairingStatus('Spotify access was not approved. Close this window and try again.');
+          return;
+        }
+        if (data.status !== 'authorized' || !data.code) {
+          if (!response.ok) throw new Error(data.error || 'Could not check phone pairing.');
+          return;
+        }
+
+        pairingExchangeInFlight.current = true;
+        setPairingStatus('Authorization received. Finishing on this screen…');
+        const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id: clientId,
+            grant_type: 'authorization_code',
+            code: data.code,
+            redirect_uri: `${window.location.origin}/`,
+            code_verifier: pairingVerifier.current,
+          }),
+        });
+        if (!tokenResponse.ok) throw new Error('Spotify could not complete the paired login.');
+        const tokenData = (await tokenResponse.json()) as SpotifyTokenResponse;
+        if (!tokenData.refresh_token) throw new Error('Spotify did not return a refresh token.');
+        saveToken({
+          accessToken: tokenData.access_token,
+          refreshToken: tokenData.refresh_token,
+          expiresAt: Date.now() + tokenData.expires_in * 1000,
+        });
+        setMode('spotify');
+        setStatus('Spotify connected');
+        setError('');
+        setPairingStatus('Connected. You can close Spotify on your phone.');
+        void fetch('/api/pairings/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: pairing.sessionId, secret: pairing.secret }),
+        });
+        closeTimer = window.setTimeout(() => closePhonePairing(), 1200);
+      } catch (reason) {
+        const message = reason instanceof Error ? reason.message : 'Could not finish phone pairing.';
+        setPairingStatus(message);
+        setError(message);
+      }
+    };
+
+    void checkPairing();
+    const poller = window.setInterval(() => void checkPairing(), 1500);
+    return () => {
+      cancelled = true;
+      window.clearInterval(poller);
+      if (closeTimer) window.clearTimeout(closeTimer);
+    };
+  }, [clientId, pairing, saveToken]);
 
   const chooseDemo = useCallback(() => {
     setMode('demo');
@@ -731,6 +930,27 @@ export default function Home() {
 
   const progress = Math.min(100, Math.max(0, (displayMs / track.durationMs) * 100));
 
+  if (phoneCallbackStatus) {
+    const success = phoneCallbackStatus === 'success';
+    return (
+      <main className="grid min-h-screen place-items-center bg-[#07090c] p-6 text-white">
+        <div className="w-full max-w-sm text-center">
+          <span className="mx-auto grid size-16 place-items-center rounded-full bg-[#1ed760]/12 text-[#1ed760]">
+            {success ? <CircleCheck className="size-8" /> : <CircleAlert className="size-8 text-amber-400" />}
+          </span>
+          <h1 className="mt-6 text-2xl font-semibold">
+            {success ? 'Spotify authorization complete' : 'Pairing could not be completed'}
+          </h1>
+          <p className="mt-3 text-base leading-6 text-white/55">
+            {success
+              ? 'Return to the Tesla screen. It will finish connecting automatically.'
+              : 'The pairing session may have expired. Return to Tesla and create a new QR code.'}
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="h-[var(--app-height,100dvh)] overflow-hidden bg-[#07090c] text-white">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_78%_42%,rgba(30,215,96,0.10),transparent_35%),linear-gradient(135deg,#0b0e12_0%,#050607_72%)]" />
@@ -767,21 +987,33 @@ export default function Home() {
                 <DialogHeader>
                   <DialogTitle className="text-xl">Spotify & lyrics</DialogTitle>
                   <DialogDescription className="text-base leading-6 text-white/55">
-                    Use your own Spotify Client ID. The app only reads what is playing and never controls playback.
+                    Connect on your phone with a QR code. The app only reads what is playing and never controls playback.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3 py-2">
-                  <Label htmlFor="spotify-client-id" className="text-sm text-white/72">
-                    Spotify Client ID
-                  </Label>
-                  <Input
-                    id="spotify-client-id"
-                    value={draftClientId}
-                    onChange={(event) => setDraftClientId(event.target.value)}
-                    placeholder="Spotify Client ID"
-                    autoComplete="off"
-                    className="h-12 border-white/12 bg-white/6 px-4 text-base text-white placeholder:text-white/28"
-                  />
+                  {managedClientId ? (
+                    <div className="flex items-center gap-3 rounded-xl border border-[#1ed760]/20 bg-[#1ed760]/8 px-4 py-3">
+                      <CircleCheck className="size-5 shrink-0 text-[#1ed760]" />
+                      <div>
+                        <p className="text-sm font-medium text-white/85">Spotify app configured</p>
+                        <p className="mt-0.5 text-sm text-white/42">No Client ID entry is needed on this screen.</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <Label htmlFor="spotify-client-id" className="text-sm text-white/72">
+                        Spotify Client ID
+                      </Label>
+                      <Input
+                        id="spotify-client-id"
+                        value={draftClientId}
+                        onChange={(event) => setDraftClientId(event.target.value)}
+                        placeholder="Spotify Client ID"
+                        autoComplete="off"
+                        className="h-12 border-white/12 bg-white/6 px-4 text-base text-white placeholder:text-white/28"
+                      />
+                    </>
+                  )}
                   <p className="text-sm leading-5 text-white/45">
                     Add this page&apos;s exact homepage URL to Redirect URIs in the Spotify Developer Dashboard.
                   </p>
@@ -881,13 +1113,60 @@ export default function Home() {
                       <LogOut />Disconnect
                     </Button>
                   )}
-                  <Button
-                    onClick={() => void beginSpotifyLogin()}
-                    className="h-11 bg-[#1ed760] px-5 text-[#031007] hover:bg-[#35e475]"
-                  >
-                    Connect Spotify
-                  </Button>
+                  {!token && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        onClick={() => void beginSpotifyLogin()}
+                        className="h-11 px-4 text-white/60 hover:bg-white/8 hover:text-white"
+                      >
+                        Connect on this screen
+                      </Button>
+                      <Button
+                        onClick={() => void startPhonePairing()}
+                        className="h-11 bg-[#1ed760] px-5 text-[#031007] hover:bg-[#35e475]"
+                      >
+                        <QrCode />Connect with phone
+                      </Button>
+                    </>
+                  )}
                 </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog
+              open={pairingOpen}
+              onOpenChange={(open) => {
+                if (!open) closePhonePairing();
+              }}
+            >
+              <DialogContent className="border border-white/12 bg-[#12161b] p-6 text-white ring-0 sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2 text-xl">
+                    <Smartphone className="size-5 text-[#1ed760]" />Connect with your phone
+                  </DialogTitle>
+                  <DialogDescription className="text-base leading-6 text-white/55">
+                    Scan the QR code and approve access in Spotify. Keep this page open while connecting.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid min-h-72 place-items-center py-2">
+                  {pairing ? (
+                    <div className="text-center">
+                      {/* oxlint-disable-next-line next/no-img-element -- QR code is generated locally as a data URL. */}
+                      <img
+                        src={pairing.qrDataUrl}
+                        alt="QR code for Spotify phone authorization"
+                        className="mx-auto size-64 rounded-2xl bg-white p-2"
+                      />
+                      <p className="mt-4 text-sm leading-5 text-white/48">QR code expires in five minutes.</p>
+                    </div>
+                  ) : (
+                    <RefreshCw className="size-7 animate-spin text-[#1ed760]" />
+                  )}
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.035] px-4 py-3 text-center text-sm text-white/62" aria-live="polite">
+                  {pairingStatus}
+                </div>
               </DialogContent>
             </Dialog>
           </header>
@@ -972,11 +1251,11 @@ export default function Home() {
               </div>
               <Button
                 variant="ghost"
-                onClick={() => void syncNow()}
+                onClick={() => void (token ? syncNow() : startPhonePairing())}
                 disabled={isSyncing}
                 className="ml-auto h-11 rounded-full px-4 text-white/55 hover:bg-white/8 hover:text-white"
               >
-                <RefreshCw className={isSyncing ? 'animate-spin' : ''} />
+                {token ? <RefreshCw className={isSyncing ? 'animate-spin' : ''} /> : <QrCode />}
                 {token ? 'Sync' : 'Connect'}
               </Button>
             </div>

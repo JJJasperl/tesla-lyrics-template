@@ -7,7 +7,7 @@ This document is a project-maintainer checklist, not legal advice. Spotify polic
 - The project does not stream, download, capture, or modify Spotify audio.
 - It reads the current track and playback position with `user-read-currently-playing`.
 - Lyrics come from LRCLIB, not Spotify.
-- OAuth uses PKCE in the browser. No Spotify Client Secret is used.
+- OAuth uses PKCE. Phone pairing relays only a short-lived authorization code back to the initiating browser; no Spotify Client Secret, access token, or refresh token is stored by the pairing service.
 - The project does not control playback or seek when a lyric is selected.
 
 ## Issues to review before public deployment
@@ -51,4 +51,3 @@ Do not describe the project as an official Tesla or Spotify product. Review Spot
 - No bundled lyrics
 - Clear Spotify, Tesla, and LRCLIB non-affiliation notice
 - No advertising, subscription, or monetization
-

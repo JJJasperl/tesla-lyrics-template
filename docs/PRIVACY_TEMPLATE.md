@@ -12,7 +12,9 @@ After you authorize Spotify, the application reads the currently playing track, 
 
 ## Where data is stored
 
-The application stores the Spotify Client ID, OAuth access and refresh tokens, cached lyrics, per-track timing offsets, and optional manual LRC text in the current browser's local storage. The application itself does not send this information to an application-owned database.
+The application stores the Spotify Client ID, OAuth access and refresh tokens, cached lyrics, per-track timing offsets, and optional manual LRC text in the current browser's local storage. OAuth access and refresh tokens are not sent to or stored in the application database.
+
+When phone pairing is used, the application database temporarily stores a pairing-session identifier, a hashed pairing secret, the Spotify Client ID, a PKCE challenge, OAuth state, and the one-time authorization result. The pairing link expires after five minutes. The authorization code is cleared after the Tesla browser successfully exchanges it for tokens.
 
 The hosting provider may process standard request information such as IP address, browser details, timestamps, security events, and operational logs. Describe the actual provider and retention here: [HOSTING AND LOGGING DETAILS].
 
@@ -24,7 +26,7 @@ The hosting provider may process standard request information such as IP address
 
 ## Retention and deletion
 
-Local data remains in the browser until the user disconnects, clears site data, or the browser removes it. Disconnecting removes the stored Spotify token; clearing site data removes the Client ID, lyric cache, timing offsets, and manual lyrics as well.
+Local data remains in the browser until the user disconnects, clears site data, or the browser removes it. Disconnecting removes the stored Spotify token; clearing site data removes the Client ID, lyric cache, timing offsets, and manual lyrics as well. Expired phone-pairing records are removed during subsequent pairing activity; operators should document any additional database-retention or cleanup policy.
 
 Explain any host-side logs or analytics retention and deletion process here: [RETENTION AND DELETION DETAILS].
 
