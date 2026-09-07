@@ -75,59 +75,78 @@ input {
   display: none;
 }
 
+.tesla-shell {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "lyrics lyrics"
+    "track playback";
+  grid-template-columns: minmax(300px, 36%) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.site-header {
+  grid-area: header;
+  z-index: 20;
+}
+
+.track-panel {
+  grid-area: track;
+  background: rgb(7 9 12 / 92%);
+}
+
+.playback-strip {
+  grid-area: playback;
+  background: rgb(7 9 12 / 92%);
+}
+
+.lyrics-panel {
+  grid-area: lyrics;
+}
+
 @media (max-height: 760px) and (min-width: 769px) {
-  .tesla-shell aside {
-    padding-top: 16px;
-    padding-bottom: 16px;
-  }
-
-  .track-panel {
-    padding-top: 10px;
-    padding-bottom: 10px;
-  }
-
-  .track-art {
-    max-width: min(280px, 27vh);
+  .track-panel,
+  .playback-strip {
+    padding-top: 12px;
+    padding-bottom: 12px;
   }
 
   .player-actions {
-    margin-top: 10px;
+    margin-top: 8px;
   }
 }
 
 @media (max-width: 768px) {
   .tesla-shell {
-    grid-template-rows: minmax(280px, 48%) minmax(0, 52%);
+    grid-template-columns: minmax(180px, 44%) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
   }
 
-  .tesla-shell aside {
-    height: 100%;
+  .site-header {
     padding: 12px 20px;
   }
 
   .track-panel {
-    grid-template-columns: 88px minmax(0, 1fr);
-    gap: 16px;
-    min-height: 0;
-    padding-top: 6px;
-    padding-bottom: 6px;
+    gap: 12px;
+    padding: 10px 16px;
   }
 
   .track-art {
-    max-width: min(88px, 17vh);
+    width: 58px;
+    height: 58px;
+    border-radius: 12px;
+  }
+
+  .track-album {
+    display: none;
+  }
+
+  .playback-strip {
+    padding: 10px 16px;
   }
 
   .player-actions {
     margin-top: 6px;
-  }
-
-  .player-actions > :first-child {
-    width: 48px;
-    height: 48px;
-  }
-
-  .lyrics-panel {
-    height: 100%;
   }
 }
 

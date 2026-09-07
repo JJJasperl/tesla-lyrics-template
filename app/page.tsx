@@ -5,7 +5,6 @@ import QRCode from 'qrcode';
 import {
   CircleAlert,
   CircleCheck,
-  ExternalLink,
   LogOut,
   Minus,
   Pause,
@@ -955,9 +954,9 @@ export default function Home() {
     <main className="h-[var(--app-height,100dvh)] overflow-hidden bg-[#07090c] text-white">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_78%_42%,rgba(30,215,96,0.10),transparent_35%),linear-gradient(135deg,#0b0e12_0%,#050607_72%)]" />
 
-      <div className="tesla-shell relative mx-auto grid h-full min-h-0 w-full max-w-[1920px] grid-cols-[minmax(270px,32vw)_1fr] max-md:grid-cols-1">
-        <aside className="flex h-full min-h-0 flex-col overflow-hidden border-r border-white/10 px-[clamp(24px,3vw,56px)] py-[clamp(20px,3.5vh,46px)] max-md:border-b max-md:border-r-0">
-          <header className="flex items-center justify-between gap-4">
+      <div className="tesla-shell relative mx-auto h-full min-h-0 w-full max-w-[1920px]">
+        <aside className="contents">
+          <header className="site-header flex items-center justify-between gap-4 px-[clamp(24px,3vw,56px)] py-[clamp(16px,2.5vh,30px)]">
             <div className="flex items-center gap-3">
               <span className="grid size-10 place-items-center rounded-full bg-[#1ed760] text-[#041208]">
                 <Radio className="size-5" />
@@ -1171,42 +1170,32 @@ export default function Home() {
             </Dialog>
           </header>
 
-          <section className="track-panel my-auto py-[clamp(12px,2.5vh,32px)] max-md:my-0 max-md:grid max-md:grid-cols-[112px_1fr] max-md:items-center max-md:gap-5">
+          <section className="track-panel flex min-w-0 items-center gap-4 border-t border-white/10 px-[clamp(24px,3vw,56px)] py-[clamp(14px,2vh,24px)]">
             {track.coverUrl ? (
               // oxlint-disable-next-line next/no-img-element -- Spotify artwork comes from a dynamic authenticated response.
               <img
                 src={track.coverUrl}
                 alt=""
-                className="track-art mb-[clamp(12px,2vh,24px)] aspect-square w-full max-w-[min(350px,30vh)] rounded-[26px] object-cover shadow-[0_24px_80px_rgba(0,0,0,0.45)] max-md:mb-0 max-md:rounded-2xl"
+                className="track-art size-[clamp(72px,9vh,96px)] shrink-0 rounded-[18px] object-cover shadow-[0_12px_36px_rgba(0,0,0,0.38)]"
               />
             ) : (
               <div
                 aria-hidden="true"
-                className="track-art mb-[clamp(12px,2vh,24px)] aspect-square w-full max-w-[min(350px,30vh)] rounded-[26px] bg-[linear-gradient(145deg,#24312b_0%,#1ed760_48%,#092f1a_100%)] shadow-[0_24px_80px_rgba(0,0,0,0.45)] max-md:mb-0 max-md:rounded-2xl"
+                className="track-art size-[clamp(72px,9vh,96px)] shrink-0 rounded-[18px] bg-[linear-gradient(145deg,#24312b_0%,#1ed760_48%,#092f1a_100%)] shadow-[0_12px_36px_rgba(0,0,0,0.38)]"
               />
             )}
             <div className="min-w-0">
-              <h2 className="truncate text-[clamp(1.75rem,3vw,3.7rem)] leading-[1.05] font-semibold tracking-[-0.04em]">
+              <h2 className="truncate text-[clamp(1.25rem,1.7vw,1.85rem)] leading-tight font-semibold tracking-[-0.03em]">
                 {track.name}
               </h2>
-              <p className="mt-3 truncate text-[clamp(1rem,1.35vw,1.45rem)] text-white/55">
+              <p className="mt-1 truncate text-[clamp(0.9rem,1vw,1.05rem)] text-white/52">
                 {track.artist}
               </p>
-              <p className="mt-1 truncate text-sm text-white/30">{track.album}</p>
-              {track.spotifyUrl && (
-                <a
-                  href={track.spotifyUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-3 inline-flex items-center gap-1.5 text-sm text-[#1ed760]/80 hover:text-[#1ed760]"
-                >
-                  Open in Spotify <ExternalLink className="size-3.5" />
-                </a>
-              )}
+              <p className="track-album mt-0.5 truncate text-sm text-white/28">{track.album}</p>
             </div>
           </section>
 
-          <footer>
+          <footer className="playback-strip min-w-0 border-t border-white/10 px-[clamp(24px,3vw,56px)] py-[clamp(14px,2vh,24px)]">
             <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-white/10">
               <div
                 className="h-full rounded-full bg-[#1ed760] transition-[width] duration-200"
@@ -1256,21 +1245,21 @@ export default function Home() {
           </footer>
         </aside>
 
-        <section className="lyrics-panel relative h-full min-h-0 overflow-hidden max-md:h-full">
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[18vh] bg-gradient-to-b from-[#07090c] to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[22vh] bg-gradient-to-t from-[#050607] to-transparent" />
+        <section className="lyrics-panel relative min-h-0 overflow-hidden">
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[15vh] bg-gradient-to-b from-[#07090c] to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[16vh] bg-gradient-to-t from-[#050607] to-transparent" />
           <div
             ref={lyricViewport}
-            className="lyric-scroll h-full overflow-y-auto px-[clamp(28px,6vw,112px)] py-[36vh] max-md:py-[20vh]"
+            className="lyric-scroll h-full overflow-y-auto px-[clamp(40px,9vw,180px)] py-[24vh] max-md:px-7 max-md:py-[18vh]"
           >
-            <div className="space-y-[clamp(22px,3.2vh,52px)]">
+            <div className="mx-auto max-w-[1500px] space-y-[clamp(22px,3.2vh,52px)]">
               {lyrics.map((line, index) => (
                 <p
                   key={`${line.time}-${index}`}
                   ref={(element) => {
                     lyricRefs.current[index] = element;
                   }}
-                  className={`max-w-[1000px] text-[clamp(2rem,4.1vw,5.25rem)] leading-[1.14] font-semibold tracking-[-0.045em] transition-all duration-[250ms] ${
+                  className={`max-w-[1400px] text-[clamp(2rem,4.35vw,5.5rem)] leading-[1.14] font-semibold tracking-[-0.045em] transition-all duration-[250ms] ${
                     index === activeIndex
                       ? 'translate-x-0 text-white opacity-100'
                       : index < activeIndex
