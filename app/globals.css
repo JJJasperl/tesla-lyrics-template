@@ -78,10 +78,10 @@ input {
 .tesla-shell {
   display: grid;
   grid-template-areas:
-    "header header"
-    "lyrics lyrics"
-    "track playback";
-  grid-template-columns: minmax(300px, 36%) minmax(0, 1fr);
+    "header"
+    "lyrics"
+    "playback";
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
@@ -90,14 +90,10 @@ input {
   z-index: 20;
 }
 
-.track-panel {
-  grid-area: track;
-  background: rgb(7 9 12 / 92%);
-}
-
 .playback-strip {
   grid-area: playback;
-  background: rgb(7 9 12 / 92%);
+  background: rgb(7 9 12 / 74%);
+  backdrop-filter: blur(24px);
 }
 
 .lyrics-panel {
@@ -105,20 +101,15 @@ input {
 }
 
 @media (max-height: 760px) and (min-width: 769px) {
-  .track-panel,
   .playback-strip {
     padding-top: 12px;
     padding-bottom: 12px;
-  }
-
-  .player-actions {
-    margin-top: 8px;
   }
 }
 
 @media (max-width: 768px) {
   .tesla-shell {
-    grid-template-columns: minmax(180px, 44%) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr) auto;
   }
 
@@ -126,27 +117,8 @@ input {
     padding: 12px 20px;
   }
 
-  .track-panel {
-    gap: 12px;
-    padding: 10px 16px;
-  }
-
-  .track-art {
-    width: 58px;
-    height: 58px;
-    border-radius: 12px;
-  }
-
-  .track-album {
-    display: none;
-  }
-
   .playback-strip {
     padding: 10px 16px;
-  }
-
-  .player-actions {
-    margin-top: 6px;
   }
 }
 

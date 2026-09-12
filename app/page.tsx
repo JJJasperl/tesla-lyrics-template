@@ -7,8 +7,6 @@ import {
   CircleCheck,
   LogOut,
   Minus,
-  Pause,
-  Play,
   Plus,
   QrCode,
   Radio,
@@ -232,7 +230,6 @@ export default function Home() {
   const [lyrics, setLyrics] = useState<LyricLine[]>(demoLyrics);
   const [displayMs, setDisplayMs] = useState(0);
   const [lastSyncAt, setLastSyncAt] = useState(0);
-  const [status, setStatus] = useState('Demo mode');
   const [error, setError] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -395,7 +392,6 @@ export default function Home() {
       const responseReceivedAt = Date.now();
       if (response.status === 204) {
         setTrack((current) => ({ ...current, isPlaying: false }));
-        setStatus('Nothing is currently playing on Spotify');
         setError('');
         return;
       }
@@ -409,7 +405,6 @@ export default function Home() {
       const data = (await response.json()) as SpotifyNowPlayingResponse;
       if (!data.item || data.item.type !== 'track') {
         setTrack((current) => ({ ...current, isPlaying: false }));
-        setStatus('Waiting for a Spotify track');
         setError('');
         return;
       }
@@ -439,11 +434,9 @@ export default function Home() {
       });
       setDisplayMs(nextTrack.progressMs);
       setLastSyncAt(responseReceivedAt);
-      setStatus(nextTrack.isPlaying ? 'Synced with Spotify' : 'Spotify is paused');
       setError('');
     } catch (reason) {
       setTrack((current) => ({ ...current, isPlaying: false }));
-      setStatus('Connection interrupted');
       setError(reason instanceof Error ? reason.message : 'Could not read Spotify playback.');
     } finally {
       spotifyRequestInFlight.current = false;
@@ -501,7 +494,6 @@ export default function Home() {
       if (!code) {
         if (restoredToken) {
           setMode('spotify');
-          setStatus('Restoring Spotify connection');
         }
         return;
       }
@@ -534,7 +526,6 @@ export default function Home() {
             expiresAt: Date.now() + data.expires_in * 1000,
           });
           setMode('spotify');
-          setStatus('Spotify connected');
         } catch (reason) {
           setError(reason instanceof Error ? reason.message : 'Spotify authorization failed.');
         } finally {
@@ -748,7 +739,6 @@ export default function Home() {
           expiresAt: Date.now() + tokenData.expires_in * 1000,
         });
         setMode('spotify');
-        setStatus('Spotify connected');
         setError('');
         setPairingStatus('Connected. You can close Spotify on your phone.');
         void fetch('/api/pairings/complete', {
@@ -778,15 +768,8 @@ export default function Home() {
     setTrack({ ...demoTrack, isPlaying: true });
     setLyrics(demoLyrics);
     setDisplayMs(0);
-    setStatus('Demo mode');
     setError('');
   }, []);
-
-  const toggleDemo = () => {
-    if (mode !== 'demo') return;
-    setTrack((current) => ({ ...current, isPlaying: !current.isPlaying }));
-    setStatus(track.isPlaying ? 'Demo paused' : 'Demo mode');
-  };
 
   const disconnect = () => {
     saveToken(null);
@@ -795,11 +778,9 @@ export default function Home() {
 
   const syncNow = useCallback(async () => {
     if (!token) {
-      setStatus('Connect Spotify first');
       setSettingsOpen(true);
       return;
     }
-    setStatus('Syncing with Spotify');
     setError('');
     await pollSpotify();
   }, [pollSpotify, token]);
@@ -913,22 +894,6 @@ export default function Home() {
   }, [syncNow, token]);
 
   const progress = Math.min(100, Math.max(0, (displayMs / track.durationMs) * 100));
-  const compactStatus = error
-    ? 'Connection issue'
-    : mode === 'demo'
-      ? track.isPlaying
-        ? 'Demo playing'
-        : 'Demo paused'
-      : isSyncing
-        ? 'Updating…'
-        : status === 'Nothing is currently playing on Spotify'
-          ? 'Nothing playing'
-          : status === 'Spotify is paused'
-            ? 'Paused'
-            : token
-              ? 'Spotify connected'
-              : 'Not connected';
-
   if (phoneCallbackStatus) {
     const success = phoneCallbackStatus === 'success';
     return (
@@ -953,6 +918,18 @@ export default function Home() {
   return (
     <main className="h-[var(--app-height,100dvh)] overflow-hidden bg-[#07090c] text-white">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_78%_42%,rgba(30,215,96,0.10),transparent_35%),linear-gradient(135deg,#0b0e12_0%,#050607_72%)]" />
+      {track.coverUrl && (
+        <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+          {/* oxlint-disable-next-line next/no-img-element -- Spotify artwork drives the ambient background. */}
+          <img
+            key={track.coverUrl}
+            src={track.coverUrl}
+            alt=""
+            className="absolute inset-[-10%] h-[120%] w-[120%] scale-110 object-cover opacity-25 blur-[76px] saturate-150"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,7,10,0.60)_0%,rgba(5,7,10,0.76)_52%,rgba(3,5,7,0.94)_100%)]" />
+        </div>
+      )}
 
       <div className="tesla-shell relative mx-auto h-full min-h-0 w-full max-w-[1920px]">
         <aside className="contents">
@@ -969,7 +946,17 @@ export default function Home() {
               </div>
             </div>
 
-            <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+            <div className="flex items-center gap-1">
+              {!token && (
+                <Button
+                  variant="ghost"
+                  onClick={() => void startPhonePairing()}
+                  className="h-11 rounded-full px-4 text-white/68 hover:bg-white/10 hover:text-white"
+                >
+                  <QrCode className="size-4" />Connect
+                </Button>
+              )}
+              <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
               <DialogTrigger
                 render={
                   <Button
@@ -989,6 +976,12 @@ export default function Home() {
                     Connect on your phone with a QR code. The app only reads what is playing and never controls playback.
                   </DialogDescription>
                 </DialogHeader>
+                {error && (
+                  <div className="flex items-start gap-2 rounded-xl border border-amber-400/20 bg-amber-400/8 px-4 py-3 text-sm leading-5 text-amber-100/80">
+                    <CircleAlert className="mt-0.5 size-4 shrink-0 text-amber-300" />
+                    <span>{error}</span>
+                  </div>
+                )}
                 <div className="space-y-3 py-2">
                   {managedClientId ? (
                     <div className="flex items-center gap-3 rounded-xl border border-[#1ed760]/20 bg-[#1ed760]/8 px-4 py-3">
@@ -1131,7 +1124,7 @@ export default function Home() {
                   )}
                 </DialogFooter>
               </DialogContent>
-            </Dialog>
+              </Dialog>
 
             <Dialog
               open={pairingOpen}
@@ -1167,33 +1160,9 @@ export default function Home() {
                   {pairingStatus}
                 </div>
               </DialogContent>
-            </Dialog>
-          </header>
-
-          <section className="track-panel flex min-w-0 items-center gap-4 border-t border-white/10 px-[clamp(24px,3vw,56px)] py-[clamp(14px,2vh,24px)]">
-            {track.coverUrl ? (
-              // oxlint-disable-next-line next/no-img-element -- Spotify artwork comes from a dynamic authenticated response.
-              <img
-                src={track.coverUrl}
-                alt=""
-                className="track-art size-[clamp(72px,9vh,96px)] shrink-0 rounded-[18px] object-cover shadow-[0_12px_36px_rgba(0,0,0,0.38)]"
-              />
-            ) : (
-              <div
-                aria-hidden="true"
-                className="track-art size-[clamp(72px,9vh,96px)] shrink-0 rounded-[18px] bg-[linear-gradient(145deg,#24312b_0%,#1ed760_48%,#092f1a_100%)] shadow-[0_12px_36px_rgba(0,0,0,0.38)]"
-              />
-            )}
-            <div className="min-w-0">
-              <h2 className="truncate text-[clamp(1.25rem,1.7vw,1.85rem)] leading-tight font-semibold tracking-[-0.03em]">
-                {track.name}
-              </h2>
-              <p className="mt-1 truncate text-[clamp(0.9rem,1vw,1.05rem)] text-white/52">
-                {track.artist}
-              </p>
-              <p className="track-album mt-0.5 truncate text-sm text-white/28">{track.album}</p>
+              </Dialog>
             </div>
-          </section>
+          </header>
 
           <footer className="playback-strip min-w-0 border-t border-white/10 px-[clamp(24px,3vw,56px)] py-[clamp(14px,2vh,24px)]">
             <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-white/10">
@@ -1207,41 +1176,6 @@ export default function Home() {
               <span>{formatTime(track.durationMs)}</span>
             </div>
 
-            <div className="player-actions mt-4 flex min-w-0 items-center gap-3">
-              {mode === 'demo' ? (
-                <Button
-                  onClick={toggleDemo}
-                  className="size-10 shrink-0 rounded-full bg-white text-black hover:bg-white/85"
-                  aria-label={track.isPlaying ? 'Pause demo' : 'Resume demo'}
-                >
-                  {track.isPlaying ? (
-                    <Pause className="size-5 fill-current" />
-                  ) : (
-                    <Play className="size-5 fill-current" />
-                  )}
-                </Button>
-              ) : (
-                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#1ed760]/10 text-[#1ed760]">
-                  <Radio className="size-4" />
-                </span>
-              )}
-              <p
-                className={`min-w-0 flex-1 truncate text-sm font-medium ${error ? 'text-amber-300/85' : 'text-white/58'}`}
-                aria-live="polite"
-                title={error || status}
-              >
-                {compactStatus}
-              </p>
-              {!token && (
-                <Button
-                  variant="ghost"
-                  onClick={() => void startPhonePairing()}
-                  className="ml-auto h-10 shrink-0 rounded-full px-3 text-white/58 hover:bg-white/8 hover:text-white"
-                >
-                  <QrCode className="size-4" />Connect
-                </Button>
-              )}
-            </div>
           </footer>
         </aside>
 
