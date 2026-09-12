@@ -917,7 +917,7 @@ export default function Home() {
 
   return (
     <main className="h-[var(--app-height,100dvh)] overflow-hidden bg-[#07090c] text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_78%_42%,rgba(30,215,96,0.10),transparent_35%),linear-gradient(135deg,#0b0e12_0%,#050607_72%)]" />
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_74%_38%,rgba(30,215,96,0.16),transparent_42%),linear-gradient(135deg,#0c1114_0%,#050607_76%)]" />
       {track.coverUrl && (
         <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
           {/* oxlint-disable-next-line next/no-img-element -- Spotify artwork drives the ambient background. */}
@@ -925,25 +925,22 @@ export default function Home() {
             key={track.coverUrl}
             src={track.coverUrl}
             alt=""
-            className="absolute inset-[-10%] h-[120%] w-[120%] scale-110 object-cover opacity-25 blur-[76px] saturate-150"
+            className="absolute inset-[-8%] h-[116%] w-[116%] scale-110 object-cover opacity-[0.42] blur-[66px] saturate-[1.8] contrast-110"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,7,10,0.60)_0%,rgba(5,7,10,0.76)_52%,rgba(3,5,7,0.94)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,6,8,0.48)_0%,rgba(4,6,8,0.62)_52%,rgba(3,5,7,0.88)_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,transparent_0%,rgba(3,5,7,0.14)_48%,rgba(3,5,7,0.68)_100%)]" />
         </div>
       )}
+      <div className="ambient-grain pointer-events-none fixed inset-0" aria-hidden="true" />
 
       <div className="tesla-shell relative mx-auto h-full min-h-0 w-full max-w-[1920px]">
         <aside className="contents">
           <header className="site-header flex items-center justify-between gap-4 px-[clamp(24px,3vw,56px)] py-[clamp(16px,2.5vh,30px)]">
             <div className="flex items-center gap-3">
-              <span className="grid size-10 place-items-center rounded-full bg-[#1ed760] text-[#041208]">
+              <span className="grid size-10 place-items-center rounded-full border border-[#72ef9a]/25 bg-[#1ed760]/14 text-[#72ef9a] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_0_28px_rgba(30,215,96,0.12)]">
                 <Radio className="size-5" />
               </span>
-              <div>
-                <p className="text-[0.72rem] font-semibold tracking-[0.23em] text-white/42 uppercase">
-                  Personal display
-                </p>
-                <h1 className="text-xl font-semibold tracking-tight">Tesla Lyrics</h1>
-              </div>
+              <h1 className="text-[1.35rem] font-semibold tracking-[-0.025em]">Tesla Lyrics</h1>
             </div>
 
             <div className="flex items-center gap-1">
@@ -1164,11 +1161,11 @@ export default function Home() {
             </div>
           </header>
 
-          <footer className="playback-strip min-w-0 border-t border-white/10 px-[clamp(24px,3vw,56px)] py-[clamp(14px,2vh,24px)]">
-            <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+          <footer className="playback-strip min-w-0 px-[clamp(24px,3vw,56px)] py-[clamp(14px,2vh,24px)]">
+            <div className="mb-3 h-px overflow-visible bg-white/14">
               <div
-                className="h-full rounded-full bg-[#1ed760] transition-[width] duration-200"
-                style={{ width: `${progress}%` }}
+                className="h-[2px] w-full origin-left -translate-y-px bg-[linear-gradient(90deg,#1ed760,#7cf2a2)] shadow-[0_0_14px_rgba(30,215,96,0.48)] transition-transform duration-200"
+                style={{ transform: `scaleX(${progress / 100})` }}
               />
             </div>
             <div className="flex items-center justify-between text-sm tabular-nums text-white/38">
@@ -1187,23 +1184,29 @@ export default function Home() {
             className="lyric-scroll h-full overflow-y-auto px-[clamp(40px,9vw,180px)] py-[24vh] max-md:px-7 max-md:py-[18vh]"
           >
             <div className="mx-auto max-w-[1500px] space-y-[clamp(22px,3.2vh,52px)]">
-              {lyrics.map((line, index) => (
-                <p
-                  key={`${line.time}-${index}`}
-                  ref={(element) => {
-                    lyricRefs.current[index] = element;
-                  }}
-                  className={`max-w-[1400px] text-[clamp(2rem,4.35vw,5.5rem)] leading-[1.14] font-semibold tracking-[-0.045em] transition-all duration-[250ms] ${
-                    index === activeIndex
-                      ? 'translate-x-0 text-white opacity-100'
-                      : index < activeIndex
-                        ? 'text-white/18 opacity-80'
-                        : 'translate-x-2 text-white/25 opacity-90'
-                  }`}
-                >
-                  {line.text}
-                </p>
-              ))}
+              {lyrics.map((line, index) => {
+                const distance = Math.abs(index - activeIndex);
+                const lyricTone =
+                  index === activeIndex
+                    ? 'lyric-line-active translate-x-0 text-white opacity-100'
+                    : distance === 1
+                      ? 'translate-x-1 text-white/36 opacity-90'
+                      : distance === 2
+                        ? 'translate-x-2 text-white/22 opacity-75'
+                        : 'translate-x-2 text-white/12 opacity-60 blur-[0.3px]';
+
+                return (
+                  <p
+                    key={`${line.time}-${index}`}
+                    ref={(element) => {
+                      lyricRefs.current[index] = element;
+                    }}
+                    className={`relative max-w-[1400px] text-[clamp(2rem,4.35vw,5.5rem)] leading-[1.14] font-semibold tracking-[-0.045em] transition-[color,opacity,transform,filter] duration-300 ${lyricTone}`}
+                  >
+                    {line.text}
+                  </p>
+                );
+              })}
             </div>
           </div>
         </section>
