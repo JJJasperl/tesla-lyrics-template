@@ -53,11 +53,11 @@ body {
   font-family:
     "Avenir Next", "Segoe UI Variable Display", "Segoe UI", "PingFang SC",
     "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
-  background: #07090c;
+  background: #edf2ef;
 }
 
 html {
-  background: #07090c;
+  background: #edf2ef;
   overflow: hidden;
 }
 
@@ -88,13 +88,15 @@ input {
 .site-header {
   grid-area: header;
   z-index: 20;
-  background: linear-gradient(180deg, rgb(4 6 8 / 48%) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgb(248 250 248 / 72%) 0%, transparent 100%);
 }
 
 .playback-strip {
   grid-area: playback;
   z-index: 20;
-  background: linear-gradient(180deg, transparent 0%, rgb(3 5 7 / 78%) 48%, rgb(3 5 7 / 94%) 100%);
+  border-top: 1px solid rgb(23 32 25 / 8%);
+  background: rgb(244 248 245 / 76%);
+  backdrop-filter: blur(18px) saturate(125%);
 }
 
 .lyrics-panel {
@@ -103,16 +105,16 @@ input {
 
 .ambient-grain {
   z-index: 1;
-  opacity: 0.035;
+  opacity: 0.028;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.65'/%3E%3C/svg%3E");
   background-size: 180px 180px;
-  mix-blend-mode: soft-light;
+  mix-blend-mode: multiply;
 }
 
 .lyric-line-active {
   text-shadow:
-    0 1px 18px rgb(255 255 255 / 12%),
-    0 0 42px rgb(255 255 255 / 5%);
+    0 1px 0 rgb(255 255 255 / 38%),
+    0 10px 34px rgb(36 69 47 / 12%);
 }
 
 .lyric-line-active::before {
@@ -123,8 +125,7 @@ input {
   width: 13px;
   height: 3px;
   border-radius: 999px;
-  background: #69ee94;
-  box-shadow: 0 0 18px rgb(30 215 96 / 55%);
+  background: #168d46;
 }
 
 @media (max-height: 760px) and (min-width: 769px) {

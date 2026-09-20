@@ -128,7 +128,7 @@ const demoLyrics: LyricLine[] = [
   { time: 17, text: 'This line lights up with the music' },
   { time: 23.5, text: 'If you see it scroll in the car' },
   { time: 30, text: 'The browser compatibility test works' },
-  { time: 37, text: 'Ready — back to the first line' },
+  { time: 37, text: 'Ready - back to the first line' },
 ];
 
 function formatTime(ms: number) {
@@ -897,7 +897,7 @@ export default function Home() {
   if (phoneCallbackStatus) {
     const success = phoneCallbackStatus === 'success';
     return (
-      <main className="grid min-h-screen place-items-center bg-[#07090c] p-6 text-white">
+      <main className="grid min-h-screen place-items-center bg-[#edf2ef] p-6 text-[#172019]">
         <div className="w-full max-w-sm text-center">
           <span className="mx-auto grid size-16 place-items-center rounded-full bg-[#1ed760]/12 text-[#1ed760]">
             {success ? <CircleCheck className="size-8" /> : <CircleAlert className="size-8 text-amber-400" />}
@@ -905,7 +905,7 @@ export default function Home() {
           <h1 className="mt-6 text-2xl font-semibold">
             {success ? 'Spotify authorization complete' : 'Pairing could not be completed'}
           </h1>
-          <p className="mt-3 text-base leading-6 text-white/55">
+          <p className="mt-3 text-base leading-6 text-[#172019]/60">
             {success
               ? 'Return to the Tesla screen. It will finish connecting automatically.'
               : 'The pairing session may have expired. Return to Tesla and create a new QR code.'}
@@ -916,8 +916,8 @@ export default function Home() {
   }
 
   return (
-    <main className="h-[var(--app-height,100dvh)] overflow-hidden bg-[#07090c] text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_74%_38%,rgba(30,215,96,0.16),transparent_42%),linear-gradient(135deg,#0c1114_0%,#050607_76%)]" />
+    <main className="h-[var(--app-height,100dvh)] overflow-hidden bg-[#edf2ef] text-[#172019]">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_74%_34%,rgba(30,215,96,0.20),transparent_46%),linear-gradient(135deg,#f5f8f4_0%,#dfe8e3_100%)]" />
       {track.coverUrl && (
         <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
           {/* oxlint-disable-next-line next/no-img-element -- Spotify artwork drives the ambient background. */}
@@ -925,10 +925,10 @@ export default function Home() {
             key={track.coverUrl}
             src={track.coverUrl}
             alt=""
-            className="absolute inset-[-8%] h-[116%] w-[116%] scale-110 object-cover opacity-[0.42] blur-[66px] saturate-[1.8] contrast-110"
+            className="absolute inset-[-3%] h-[106%] w-[106%] scale-[1.04] object-cover opacity-[0.48] blur-[18px] saturate-[1.35] contrast-105"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,6,8,0.48)_0%,rgba(4,6,8,0.62)_52%,rgba(3,5,7,0.88)_100%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,transparent_0%,rgba(3,5,7,0.14)_48%,rgba(3,5,7,0.68)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(248,250,247,0.58)_0%,rgba(241,246,242,0.66)_54%,rgba(231,238,233,0.82)_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(255,255,255,0.08)_0%,rgba(246,249,246,0.16)_48%,rgba(184,199,189,0.30)_100%)]" />
         </div>
       )}
       <div className="ambient-grain pointer-events-none fixed inset-0" aria-hidden="true" />
@@ -937,7 +937,7 @@ export default function Home() {
         <aside className="contents">
           <header className="site-header flex items-center justify-between gap-4 px-[clamp(24px,3vw,56px)] py-[clamp(16px,2.5vh,30px)]">
             <div className="flex items-center gap-3">
-              <span className="grid size-10 place-items-center rounded-full border border-[#72ef9a]/25 bg-[#1ed760]/14 text-[#72ef9a] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_0_28px_rgba(30,215,96,0.12)]">
+              <span className="grid size-10 place-items-center rounded-full border border-[#158541]/15 bg-[#168d46] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_8px_24px_rgba(34,92,58,0.14)]">
                 <Radio className="size-5" />
               </span>
               <h1 className="text-[1.35rem] font-semibold tracking-[-0.025em]">Tesla Lyrics</h1>
@@ -948,7 +948,7 @@ export default function Home() {
                 <Button
                   variant="ghost"
                   onClick={() => void startPhonePairing()}
-                  className="h-11 rounded-full px-4 text-white/68 hover:bg-white/10 hover:text-white"
+                  className="h-11 rounded-full px-4 text-[#172019]/68 hover:bg-[#172019]/8 hover:text-[#172019]"
                 >
                   <QrCode className="size-4" />Connect
                 </Button>
@@ -960,37 +960,37 @@ export default function Home() {
                     variant="ghost"
                     size="icon-lg"
                     aria-label="Spotify settings"
-                    className="size-12 rounded-full text-white/65 hover:bg-white/10 hover:text-white"
+                    className="size-12 rounded-full text-[#172019]/62 hover:bg-[#172019]/8 hover:text-[#172019]"
                   />
                 }
               >
                 <Settings className="size-5" />
               </DialogTrigger>
-              <DialogContent className="max-h-[calc(var(--app-height,100dvh)-32px)] overflow-y-auto border border-white/12 bg-[#12161b] p-6 text-white ring-0 sm:max-w-lg">
+              <DialogContent className="max-h-[calc(var(--app-height,100dvh)-32px)] overflow-y-auto border border-[#172019]/12 bg-[#f8faf8] p-6 text-[#172019] ring-0 sm:max-w-lg">
                 <DialogHeader>
                   <DialogTitle className="text-xl">Spotify & lyrics</DialogTitle>
-                  <DialogDescription className="text-base leading-6 text-white/55">
+                  <DialogDescription className="text-base leading-6 text-[#172019]/58">
                     Connect on your phone with a QR code. The app only reads what is playing and never controls playback.
                   </DialogDescription>
                 </DialogHeader>
                 {error && (
-                  <div className="flex items-start gap-2 rounded-xl border border-amber-400/20 bg-amber-400/8 px-4 py-3 text-sm leading-5 text-amber-100/80">
-                    <CircleAlert className="mt-0.5 size-4 shrink-0 text-amber-300" />
+                  <div className="flex items-start gap-2 rounded-xl border border-amber-700/15 bg-amber-100/65 px-4 py-3 text-sm leading-5 text-amber-950/75">
+                    <CircleAlert className="mt-0.5 size-4 shrink-0 text-amber-700" />
                     <span>{error}</span>
                   </div>
                 )}
                 <div className="space-y-3 py-2">
                   {managedClientId ? (
-                    <div className="flex items-center gap-3 rounded-xl border border-[#1ed760]/20 bg-[#1ed760]/8 px-4 py-3">
-                      <CircleCheck className="size-5 shrink-0 text-[#1ed760]" />
+                    <div className="flex items-center gap-3 rounded-xl border border-[#168d46]/18 bg-[#168d46]/8 px-4 py-3">
+                      <CircleCheck className="size-5 shrink-0 text-[#168d46]" />
                       <div>
-                        <p className="text-sm font-medium text-white/85">Spotify app configured</p>
-                        <p className="mt-0.5 text-sm text-white/42">No Client ID entry is needed on this screen.</p>
+                        <p className="text-sm font-medium text-[#172019]/85">Spotify app configured</p>
+                        <p className="mt-0.5 text-sm text-[#172019]/48">No Client ID entry is needed on this screen.</p>
                       </div>
                     </div>
                   ) : (
                     <>
-                      <Label htmlFor="spotify-client-id" className="text-sm text-white/72">
+                      <Label htmlFor="spotify-client-id" className="text-sm text-[#172019]/72">
                         Spotify Client ID
                       </Label>
                       <Input
@@ -999,21 +999,21 @@ export default function Home() {
                         onChange={(event) => setDraftClientId(event.target.value)}
                         placeholder="Spotify Client ID"
                         autoComplete="off"
-                        className="h-12 border-white/12 bg-white/6 px-4 text-base text-white placeholder:text-white/28"
+                        className="h-12 border-[#172019]/14 bg-white/72 px-4 text-base text-[#172019] placeholder:text-[#172019]/35"
                       />
                     </>
                   )}
-                  <p className="text-sm leading-5 text-white/45">
+                  <p className="text-sm leading-5 text-[#172019]/52">
                     Add this page&apos;s exact homepage URL to Redirect URIs in the Spotify Developer Dashboard.
                   </p>
                 </div>
                 {mode === 'spotify' && (
-                  <div className="space-y-3 border-t border-white/10 pt-4">
+                  <div className="space-y-3 border-t border-[#172019]/10 pt-4">
                     <div>
-                      <Label htmlFor="manual-lrc" className="text-sm text-white/72">
+                      <Label htmlFor="manual-lrc" className="text-sm text-[#172019]/72">
                         Advanced: local lyric override
                       </Label>
-                      <p className="mt-1 text-sm leading-5 text-white/42">
+                      <p className="mt-1 text-sm leading-5 text-[#172019]/48">
                         Lyrics are fetched automatically. Use this only to replace an incorrect match; it stays in this browser.
                       </p>
                     </div>
@@ -1022,7 +1022,7 @@ export default function Home() {
                       value={manualLrc}
                       onChange={(event) => setManualLrc(event.target.value)}
                       placeholder={'[00:12.00] First line\n[00:18.50] Second line'}
-                      className="min-h-28 border-white/12 bg-white/6 px-4 py-3 text-sm text-white placeholder:text-white/25"
+                      className="min-h-28 border-[#172019]/14 bg-white/72 px-4 py-3 text-sm text-[#172019] placeholder:text-[#172019]/32"
                     />
                     <input
                       ref={lrcFileInput}
@@ -1038,7 +1038,7 @@ export default function Home() {
                       <Button
                         variant="outline"
                         onClick={() => lrcFileInput.current?.click()}
-                        className="h-11 border-white/14 bg-transparent px-4 text-white hover:bg-white/8"
+                        className="h-11 border-[#172019]/16 bg-transparent px-4 text-[#172019] hover:bg-[#172019]/6"
                       >
                         <Upload />Import .lrc file
                       </Button>
@@ -1049,10 +1049,10 @@ export default function Home() {
                         Save pasted lyrics
                       </Button>
                     </div>
-                    <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+                    <div className="rounded-xl border border-[#172019]/10 bg-white/52 p-3">
                       <div className="mb-2 flex items-center justify-between gap-3">
-                        <span className="text-sm text-white/65">Lyric timing offset</span>
-                        <span className="text-sm tabular-nums text-[#1ed760]">
+                        <span className="text-sm text-[#172019]/65">Lyric timing offset</span>
+                        <span className="text-sm tabular-nums text-[#168d46]">
                           {lyricOffsetMs >= 0 ? '+' : ''}{(lyricOffsetMs / 1000).toFixed(1)} sec
                         </span>
                       </div>
@@ -1060,14 +1060,14 @@ export default function Home() {
                         <Button
                           variant="ghost"
                           onClick={() => adjustLyricOffset(-250)}
-                          className="h-10 bg-white/5 text-white/72 hover:bg-white/10 hover:text-white"
+                          className="h-10 bg-[#172019]/5 text-[#172019]/72 hover:bg-[#172019]/9 hover:text-[#172019]"
                         >
                           <Minus />0.25 sec earlier
                         </Button>
                         <Button
                           variant="ghost"
                           onClick={() => adjustLyricOffset(250)}
-                          className="h-10 bg-white/5 text-white/72 hover:bg-white/10 hover:text-white"
+                          className="h-10 bg-[#172019]/5 text-[#172019]/72 hover:bg-[#172019]/9 hover:text-[#172019]"
                         >
                           <Plus />0.25 sec later
                         </Button>
@@ -1077,7 +1077,7 @@ export default function Home() {
                       variant="outline"
                       onClick={refreshAutomaticLyrics}
                       disabled={isSyncing}
-                      className="h-10 w-full border-white/14 bg-transparent px-3 text-white/65 hover:bg-white/8 hover:text-white"
+                      className="h-10 w-full border-[#172019]/16 bg-transparent px-3 text-[#172019]/68 hover:bg-[#172019]/6 hover:text-[#172019]"
                     >
                       <RefreshCw className={isSyncing ? 'animate-spin' : ''} />Re-fetch automatic lyrics
                     </Button>
@@ -1085,19 +1085,19 @@ export default function Home() {
                       <Button
                         variant="ghost"
                         onClick={clearPersonalLrc}
-                        className="h-10 px-3 text-white/42 hover:bg-white/8 hover:text-white"
+                        className="h-10 px-3 text-[#172019]/50 hover:bg-[#172019]/6 hover:text-[#172019]"
                       >
                         <Trash2 />Clear lyrics for this track
                       </Button>
                     )}
                   </div>
                 )}
-                <DialogFooter className="-mx-6 -mb-6 border-white/10 bg-white/[0.025] p-6">
+                <DialogFooter className="-mx-6 -mb-6 border-[#172019]/10 bg-[#172019]/[0.025] p-6">
                   {token && (
                     <Button
                       variant="ghost"
                       onClick={disconnect}
-                      className="h-11 px-4 text-white/60 hover:bg-white/8 hover:text-white"
+                      className="h-11 px-4 text-[#172019]/60 hover:bg-[#172019]/6 hover:text-[#172019]"
                     >
                       <LogOut />Disconnect
                     </Button>
@@ -1107,7 +1107,7 @@ export default function Home() {
                       <Button
                         variant="ghost"
                         onClick={() => void beginSpotifyLogin()}
-                        className="h-11 px-4 text-white/60 hover:bg-white/8 hover:text-white"
+                        className="h-11 px-4 text-[#172019]/60 hover:bg-[#172019]/6 hover:text-[#172019]"
                       >
                         Connect on this screen
                       </Button>
@@ -1129,12 +1129,12 @@ export default function Home() {
                 if (!open) closePhonePairing();
               }}
             >
-              <DialogContent className="border border-white/12 bg-[#12161b] p-6 text-white ring-0 sm:max-w-md">
+              <DialogContent className="border border-[#172019]/12 bg-[#f8faf8] p-6 text-[#172019] ring-0 sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2 text-xl">
                     <Smartphone className="size-5 text-[#1ed760]" />Connect with your phone
                   </DialogTitle>
-                  <DialogDescription className="text-base leading-6 text-white/55">
+                  <DialogDescription className="text-base leading-6 text-[#172019]/58">
                     Scan the QR code and approve access in Spotify. Keep this page open while connecting.
                   </DialogDescription>
                 </DialogHeader>
@@ -1147,13 +1147,13 @@ export default function Home() {
                         alt="QR code for Spotify phone authorization"
                         className="mx-auto size-64 rounded-2xl bg-white p-2"
                       />
-                      <p className="mt-4 text-sm leading-5 text-white/48">QR code expires in five minutes.</p>
+                      <p className="mt-4 text-sm leading-5 text-[#172019]/52">QR code expires in five minutes.</p>
                     </div>
                   ) : (
                     <RefreshCw className="size-7 animate-spin text-[#1ed760]" />
                   )}
                 </div>
-                <div className="rounded-xl border border-white/10 bg-white/[0.035] px-4 py-3 text-center text-sm text-white/62" aria-live="polite">
+                <div className="rounded-xl border border-[#172019]/10 bg-white/55 px-4 py-3 text-center text-sm text-[#172019]/65" aria-live="polite">
                   {pairingStatus}
                 </div>
               </DialogContent>
@@ -1161,24 +1161,47 @@ export default function Home() {
             </div>
           </header>
 
-          <footer className="playback-strip min-w-0 px-[clamp(24px,3vw,56px)] py-[clamp(14px,2vh,24px)]">
-            <div className="mb-3 h-px overflow-visible bg-white/14">
+          <footer className="playback-strip min-w-0 px-[clamp(24px,3vw,56px)] py-[clamp(12px,1.8vh,20px)]">
+            <div className="mb-3 h-px overflow-visible bg-[#172019]/16">
               <div
-                className="h-[2px] w-full origin-left -translate-y-px bg-[linear-gradient(90deg,#1ed760,#7cf2a2)] shadow-[0_0_14px_rgba(30,215,96,0.48)] transition-transform duration-200"
+                className="h-[2px] w-full origin-left -translate-y-px bg-[#168d46] transition-transform duration-200"
                 style={{ transform: `scaleX(${progress / 100})` }}
               />
             </div>
-            <div className="flex items-center justify-between text-sm tabular-nums text-white/38">
-              <span>{formatTime(displayMs)}</span>
-              <span>{formatTime(track.durationMs)}</span>
+            <div className="flex min-w-0 items-center gap-4">
+              {track.coverUrl ? (
+                // oxlint-disable-next-line next/no-img-element -- Spotify artwork is supplied dynamically.
+                <img
+                  src={track.coverUrl}
+                  alt={`${track.album} cover`}
+                  className="size-14 shrink-0 rounded-xl object-cover shadow-[0_10px_28px_rgba(35,67,47,0.16)]"
+                />
+              ) : (
+                <span className="grid size-14 shrink-0 place-items-center rounded-xl bg-[#168d46]/12 text-[#168d46]">
+                  <Radio className="size-6" />
+                </span>
+              )}
+              <div className="min-w-0">
+                <p className="truncate text-lg font-semibold tracking-[-0.02em] text-[#172019]">{track.name}</p>
+                <p className="mt-0.5 flex min-w-0 items-center gap-2 text-sm text-[#172019]/58">
+                  <span className="truncate">{track.artist}</span>
+                  <span className="shrink-0 text-[#172019]/25" aria-hidden="true">/</span>
+                  <span className="truncate">{track.album}</span>
+                </p>
+              </div>
+              <div className="ml-auto flex shrink-0 items-center gap-2 text-sm tabular-nums text-[#172019]/48">
+                <span>{formatTime(displayMs)}</span>
+                <span className="text-[#172019]/24">/</span>
+                <span>{formatTime(track.durationMs)}</span>
+              </div>
             </div>
 
           </footer>
         </aside>
 
         <section className="lyrics-panel relative min-h-0 overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[15vh] bg-gradient-to-b from-[#07090c] to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[16vh] bg-gradient-to-t from-[#050607] to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[15vh] bg-gradient-to-b from-[rgba(239,244,240,0.82)] to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[16vh] bg-gradient-to-t from-[rgba(229,237,231,0.88)] to-transparent" />
           <div
             ref={lyricViewport}
             className="lyric-scroll h-full overflow-y-auto px-[clamp(40px,9vw,180px)] py-[24vh] max-md:px-7 max-md:py-[18vh]"
@@ -1188,12 +1211,12 @@ export default function Home() {
                 const distance = Math.abs(index - activeIndex);
                 const lyricTone =
                   index === activeIndex
-                    ? 'lyric-line-active translate-x-0 text-white opacity-100'
+                    ? 'lyric-line-active translate-x-0 text-[#172019] opacity-100'
                     : distance === 1
-                      ? 'translate-x-1 text-white/36 opacity-90'
+                      ? 'translate-x-1 text-[#172019]/46 opacity-90'
                       : distance === 2
-                        ? 'translate-x-2 text-white/22 opacity-75'
-                        : 'translate-x-2 text-white/12 opacity-60 blur-[0.3px]';
+                        ? 'translate-x-2 text-[#172019]/28 opacity-75'
+                        : 'translate-x-2 text-[#172019]/16 opacity-60 blur-[0.2px]';
 
                 return (
                   <p
