@@ -53,12 +53,134 @@ body {
   font-family:
     "Avenir Next", "Segoe UI Variable Display", "Segoe UI", "PingFang SC",
     "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
-  background: #edf2ef;
+  background: var(--page-bg, #edf2ef);
 }
 
 html {
-  background: #edf2ef;
+  background: var(--page-bg, #edf2ef);
   overflow: hidden;
+}
+
+:root,
+:root[data-theme="light"] {
+  --page-bg: #edf2ef;
+  --ink: #172019;
+  --ink-85: rgb(23 32 25 / 85%);
+  --ink-72: rgb(23 32 25 / 72%);
+  --ink-68: rgb(23 32 25 / 68%);
+  --ink-65: rgb(23 32 25 / 65%);
+  --ink-62: rgb(23 32 25 / 62%);
+  --ink-60: rgb(23 32 25 / 60%);
+  --ink-58: rgb(23 32 25 / 58%);
+  --ink-52: rgb(23 32 25 / 52%);
+  --ink-50: rgb(23 32 25 / 50%);
+  --ink-48: rgb(23 32 25 / 48%);
+  --ink-46: rgb(23 32 25 / 46%);
+  --ink-35: rgb(23 32 25 / 35%);
+  --ink-28: rgb(23 32 25 / 28%);
+  --ink-25: rgb(23 32 25 / 25%);
+  --ink-16: rgb(23 32 25 / 16%);
+  --ink-09: rgb(23 32 25 / 9%);
+  --ink-08: rgb(23 32 25 / 8%);
+  --ink-06: rgb(23 32 25 / 6%);
+  --ink-05: rgb(23 32 25 / 5%);
+  --ink-025: rgb(23 32 25 / 2.5%);
+  --surface: #f8faf8;
+  --surface-soft: rgb(255 255 255 / 55%);
+  --field: rgb(255 255 255 / 72%);
+  --border: rgb(23 32 25 / 12%);
+  --border-strong: rgb(23 32 25 / 16%);
+  --border-soft: rgb(23 32 25 / 10%);
+  --progress-track: rgb(23 32 25 / 16%);
+  --header-wash: linear-gradient(180deg, rgb(248 250 248 / 72%) 0%, transparent 100%);
+  --playback-bg: rgb(244 248 245 / 76%);
+  --fade-top: linear-gradient(180deg, rgb(239 244 240 / 82%) 0%, transparent 100%);
+  --fade-bottom: linear-gradient(0deg, rgb(229 237 231 / 88%) 0%, transparent 100%);
+}
+
+:root[data-theme="dark"] {
+  --page-bg: #171b19;
+  --ink: #eef3ef;
+  --ink-85: rgb(238 243 239 / 85%);
+  --ink-72: rgb(238 243 239 / 72%);
+  --ink-68: rgb(238 243 239 / 68%);
+  --ink-65: rgb(238 243 239 / 65%);
+  --ink-62: rgb(238 243 239 / 62%);
+  --ink-60: rgb(238 243 239 / 60%);
+  --ink-58: rgb(238 243 239 / 58%);
+  --ink-52: rgb(238 243 239 / 52%);
+  --ink-50: rgb(238 243 239 / 50%);
+  --ink-48: rgb(238 243 239 / 48%);
+  --ink-46: rgb(238 243 239 / 46%);
+  --ink-35: rgb(238 243 239 / 35%);
+  --ink-28: rgb(238 243 239 / 28%);
+  --ink-25: rgb(238 243 239 / 25%);
+  --ink-16: rgb(238 243 239 / 16%);
+  --ink-09: rgb(238 243 239 / 9%);
+  --ink-08: rgb(238 243 239 / 8%);
+  --ink-06: rgb(238 243 239 / 6%);
+  --ink-05: rgb(238 243 239 / 5%);
+  --ink-025: rgb(238 243 239 / 2.5%);
+  --surface: #222824;
+  --surface-soft: rgb(255 255 255 / 5.5%);
+  --field: rgb(255 255 255 / 7%);
+  --border: rgb(238 243 239 / 12%);
+  --border-strong: rgb(238 243 239 / 16%);
+  --border-soft: rgb(238 243 239 / 10%);
+  --progress-track: rgb(238 243 239 / 18%);
+  --header-wash: linear-gradient(180deg, rgb(20 25 22 / 78%) 0%, transparent 100%);
+  --playback-bg: rgb(27 33 29 / 82%);
+  --fade-top: linear-gradient(180deg, rgb(23 28 25 / 88%) 0%, transparent 100%);
+  --fade-bottom: linear-gradient(0deg, rgb(20 25 22 / 94%) 0%, transparent 100%);
+}
+
+.tesla-app {
+  background: var(--page-bg);
+  color: var(--ink);
+  transition: background-color 260ms ease, color 260ms ease;
+}
+
+.ambient-base {
+  background:
+    radial-gradient(circle at 74% 34%, rgb(30 215 96 / 20%), transparent 46%),
+    linear-gradient(135deg, #f5f8f4 0%, #dfe8e3 100%);
+}
+
+:root[data-theme="dark"] .ambient-base {
+  background:
+    radial-gradient(circle at 74% 34%, rgb(38 129 76 / 18%), transparent 48%),
+    linear-gradient(135deg, #242a26 0%, #151917 100%);
+}
+
+.album-art {
+  opacity: 0.48;
+  filter: blur(18px) saturate(1.35) contrast(1.05);
+  transition: opacity 260ms ease, filter 260ms ease;
+}
+
+:root[data-theme="dark"] .album-art {
+  opacity: 0.42;
+  filter: blur(22px) saturate(1.3) brightness(0.72);
+}
+
+.album-scrim {
+  background: linear-gradient(180deg, rgb(248 250 247 / 58%) 0%, rgb(241 246 242 / 66%) 54%, rgb(231 238 233 / 82%) 100%);
+}
+
+.album-vignette {
+  background: radial-gradient(circle at 50% 38%, rgb(255 255 255 / 8%) 0%, rgb(246 249 246 / 16%) 48%, rgb(184 199 189 / 30%) 100%);
+}
+
+:root[data-theme="dark"] .album-scrim {
+  background: linear-gradient(180deg, rgb(20 25 22 / 48%) 0%, rgb(20 25 22 / 60%) 54%, rgb(17 21 19 / 82%) 100%);
+}
+
+:root[data-theme="dark"] .album-vignette {
+  background: radial-gradient(circle at 50% 38%, transparent 0%, rgb(15 19 17 / 15%) 48%, rgb(10 13 11 / 48%) 100%);
+}
+
+.theme-dialog {
+  transition: background-color 260ms ease, color 260ms ease, border-color 260ms ease;
 }
 
 button,
@@ -88,19 +210,27 @@ input {
 .site-header {
   grid-area: header;
   z-index: 20;
-  background: linear-gradient(180deg, rgb(248 250 248 / 72%) 0%, transparent 100%);
+  background: var(--header-wash);
 }
 
 .playback-strip {
   grid-area: playback;
   z-index: 20;
-  border-top: 1px solid rgb(23 32 25 / 8%);
-  background: rgb(244 248 245 / 76%);
+  border-top: 1px solid var(--border-soft);
+  background: var(--playback-bg);
   backdrop-filter: blur(18px) saturate(125%);
 }
 
 .lyrics-panel {
   grid-area: lyrics;
+}
+
+.lyrics-fade-top {
+  background: var(--fade-top);
+}
+
+.lyrics-fade-bottom {
+  background: var(--fade-bottom);
 }
 
 .ambient-grain {
@@ -111,10 +241,21 @@ input {
   mix-blend-mode: multiply;
 }
 
+:root[data-theme="dark"] .ambient-grain {
+  opacity: 0.035;
+  mix-blend-mode: soft-light;
+}
+
 .lyric-line-active {
   text-shadow:
     0 1px 0 rgb(255 255 255 / 38%),
     0 10px 34px rgb(36 69 47 / 12%);
+}
+
+:root[data-theme="dark"] .lyric-line-active {
+  text-shadow:
+    0 1px 18px rgb(255 255 255 / 7%),
+    0 10px 34px rgb(0 0 0 / 18%);
 }
 
 .lyric-line-active::before {
